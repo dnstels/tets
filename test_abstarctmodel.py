@@ -4,43 +4,32 @@ import ast
 from memory_profiler import profile
 
 import sys
-spec = importlib.util.spec_from_file_location("models", "core/models.py")
-models = importlib.util.module_from_spec(spec)
-sys.modules["models"] = models
-spec.loader.exec_module(models)
-spec1 = importlib.util.spec_from_file_location("models", "core/tools.py")
-tools = importlib.util.module_from_spec(spec1)
-sys.modules["tools"] = tools
-spec1.loader.exec_module(tools)
+sys.path.append('.')
+from  core.models import AbstractProjectModel
 
+# spec = importlib.util.spec_from_file_location("models", "core/models.py")
+# models = importlib.util.module_from_spec(spec)
+# sys.modules["models"] = models
+# spec.loader.exec_module(models)
+# spec1 = importlib.util.spec_from_file_location("models", "core/tools.py")
+# tools = importlib.util.module_from_spec(spec1)
+# sys.modules["tools"] = tools
+# spec1.loader.exec_module(tools)
 
+d_names={}
+d_names['Flowline']=[
+    'kg202.Flowline_1',
+    'kg202-205.Flowline_1',
+    'kg205.Flowline_1'
+]
+d_names['Source']=['KG_202','KG_205']
+d_names['Sink']=['u2-202-205']
+d_names['Junction']=['t-u2-202-205']
+d_names['Choke']=['Ck','Ckc']
 
-class FakeProjModel(models.AbstractProjectModel):
+class FakeProjModel(AbstractProjectModel):
     def __init__(self) -> None:
         super().__init__()
-    
-    def init(self):
-        # self._AbstractProjectModel__flowlines=[
-        #     'kg202.Flowline_1',
-        #     'kg202-205.Flowline_1',
-        #     'kg205.Flowline_1'
-        # ]
-        # self._AbstractProjectModel__sources=['KG_202','KG_205']
-        # self._AbstractProjectModel__sinks=['u2-202-205']
-        # self._AbstractProjectModel__junctions=['t-u2-202-205']
-        # self._AbstractProjectModel__chokes=['Ck','Ckc']
-        d_names={}
-        d_names['Flowline']=[
-            'kg202.Flowline_1',
-            'kg202-205.Flowline_1',
-            'kg205.Flowline_1'
-        ]
-        d_names['Source']=['KG_202','KG_205']
-        d_names['Sink']=['u2-202-205']
-        d_names['Junction']=['t-u2-202-205']
-        d_names['Choke']=['Ck','Ckc']
-    
-        self._AbstractProjectModel__Name=d_names
     
     def load(self):
         pass
@@ -52,19 +41,19 @@ json_Names='{"Flowline": ["kg202.Flowline_1", "kg202-205.Flowline_1", "kg205.Flo
 json_string=f'{{"Names":{json_Names}}}'
 json_network="[{'Source': 'kg202-205.Flowline_1', 'Destination': 'u2-202-205'}, {'Source': 'Ck', 'Destination': 'kg202.Flowline_1'}, {'Source': 't-u2-202-205', 'Destination': 'kg202-205.Flowline_1'}, {'Source': 'KG_205', 'Destination': 'Ckc'}, {'Source': 'kg205.Flowline_1', 'Destination': 't-u2-202-205'}, {'Source': 'Ckc', 'Destination': 'kg205.Flowline_1'}, {'Source': 'Ck', 'Destination': 'KG_202'}, {'Source': 'kg202.Flowline_1', 'Destination': 't-u2-202-205'}]"
 
-def test_is_current_count_flows():
+def test_is_current_count_names():
     sut=FakeProjModel()
-    sut.init()
-    assert len(sut.Flowlines)==3
+    sut.init(names=d_names,network=[],data={},indata={})
+    assert len(sut.Names)==5
 
 def test_is_found_dates_to_json_str():
     sut=FakeProjModel()
-    sut.init()
-    assert sut.to_json().find('"Flowlines": [') > -1
+    sut.init(names=d_names,network=[],data={},indata={})
+    assert sut.to_json().find('"Flowline":') > -1
 
 def test_is_currect_from_json():
     sut=FakeProjModel()
-    assert len(sut.Names['Flowline'])==0
+    assert len(sut.Names)==0
     sut.from_json(json_string)
     assert len(sut.Names['Flowline'])==3
     assert 'kg202-205.Flowline_1' in sut.Names['Flowline']
