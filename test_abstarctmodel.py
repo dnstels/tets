@@ -5,7 +5,7 @@ from memory_profiler import profile
 
 import sys
 sys.path.append('.')
-from  core.models import AbstractProjectModel
+from  core.models import ProjectDataModel
 
 # spec = importlib.util.spec_from_file_location("models", "core/models.py")
 # models = importlib.util.module_from_spec(spec)
@@ -27,7 +27,7 @@ d_names['Sink']=['u2-202-205']
 d_names['Junction']=['t-u2-202-205']
 d_names['Choke']=['Ck','Ckc']
 
-class FakeProjModel(AbstractProjectModel):
+class FakeProjModel(ProjectDataModel):
     def __init__(self) -> None:
         super().__init__()
     
@@ -38,8 +38,15 @@ class FakeProjModel(AbstractProjectModel):
         pass
     
 json_Names='{"Flowline": ["kg202.Flowline_1", "kg202-205.Flowline_1", "kg205.Flowline_1"], "Source": ["KG_202", "KG_205"], "Sink": ["u2-202-205"], "Junction": ["t-u2-202-205"], "Choke": ["Ck", "Ckc"]}'
-json_string=f'{{"Names":{json_Names}}}'
 json_network="[{'Source': 'kg202-205.Flowline_1', 'Destination': 'u2-202-205'}, {'Source': 'Ck', 'Destination': 'kg202.Flowline_1'}, {'Source': 't-u2-202-205', 'Destination': 'kg202-205.Flowline_1'}, {'Source': 'KG_205', 'Destination': 'Ckc'}, {'Source': 'kg205.Flowline_1', 'Destination': 't-u2-202-205'}, {'Source': 'Ckc', 'Destination': 'kg205.Flowline_1'}, {'Source': 'Ck', 'Destination': 'KG_202'}, {'Source': 'kg202.Flowline_1', 'Destination': 't-u2-202-205'}]"
+json_string=f'''{{
+    "Names":{json_Names},
+    "Network":{json_network},
+    "FlowData":{{}},
+    "InData":{{}},
+    "OutData":{{}},
+    "pipesim_filename":"filename.pips"
+    }}'''
 
 def test_is_current_count_names():
     sut=FakeProjModel()
@@ -59,11 +66,15 @@ def test_is_currect_from_json():
     assert 'kg202-205.Flowline_1' in sut.Names['Flowline']
 
 def test_network():
-    # sut=FakeProjModel()
-    network=ast.literal_eval(json_network)
-    print(type(network))
-    assert len(network) > 0
-    # assert len(sut.network) > 0
+    sut=FakeProjModel()
+    print(sut.to_json(True))
+    # network=ast.literal_eval(json_network)
+    # names=ast.literal_eval(json_Names)
+    # project=ast.literal_eval(json_string)
+    # print(type(network),type(names))
+    # for k,v in project.items():
+    #     print(k,type(v))
+    # assert len(network) > 0
     pass
 
 # class T():
@@ -78,10 +89,10 @@ def test_network():
 #     return a
 
 if __name__=='__main__':
-    sut=FakeProjModel()
-    o=sut.from_json(json_string)
-    print(sut.to_json(True))
-    print(sut.Names)
+    # sut=FakeProjModel()
+    # o=sut.from_json(json_string)
+    # print(sut.to_json(True))
+    # print(sut.Names)
     # for k,v in sut.to_dict().items():
     #     print(k,v)
     # # for f in sut:
@@ -103,6 +114,8 @@ if __name__=='__main__':
     # obj=json.loads(json_string)
     # for k,v in obj.items():
     #     print(k,v)
+
+    test_network()
 
     pass
     
